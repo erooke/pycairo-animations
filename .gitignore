@@ -3,3 +3,6 @@
 .idea
 _test.py
 .python-version
+__pycache__
+*.mov
+*.mp4
