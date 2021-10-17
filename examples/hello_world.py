@@ -22,21 +22,21 @@ def main():
     # frame, then write the text again. This will generate a text glow
     # effect.
     frame.text(
-        text='Hello, World!',
+        text="Hello, World!",
         x=center_x,
         y=center_y - 30,
-        color='00f0ffcc',
+        color="00f0ffcc",
         font_size=100,
-        align='center',
+        align="center",
     )
     frame.blur(blur_radius=8)
     frame.text(
-        text='Hello, World!',
+        text="Hello, World!",
         x=center_x,
         y=center_y - 30,
-        color='00f0ff',
+        color="00f0ff",
         font_size=100,
-        align='center',
+        align="center",
     )
 
     bar_width = WIDTH - 100
@@ -48,7 +48,7 @@ def main():
     count_down_frames = COUNT_DOWN_SECS * FPS + 1
 
     # Set the font for the countdown time text.
-    frame.set_font(font_face='Helvetica')
+    frame.set_font(font_face="Helvetica")
 
     for frame_num in tqdm.trange(count_down_frames):
         cur_secs = frame_num / FPS
@@ -56,13 +56,16 @@ def main():
         secs_left = COUNT_DOWN_SECS - cur_secs
 
         frame.clear_rect(
-            x=bar_x - 50, y=bar_y - 100, width=bar_width + 100, height=bar_height + 200,
+            x=bar_x - 50,
+            y=bar_y - 100,
+            width=bar_width + 100,
+            height=bar_height + 200,
         )
 
         # Draw the progress bar foreground with a glow blur.
         frame.line(
             points=[(bar_x, bar_y), (bar_x + bar_width * progress, bar_y)],
-            color='f0f',
+            color="f0f",
             line_width=30,
         )
         frame.blur_rect(
@@ -74,14 +77,16 @@ def main():
         )
         frame.line(
             points=[(bar_x, bar_y), (bar_x + bar_width * progress, bar_y)],
-            color='f0f',
+            color="f0f",
             line_width=30,
         )
 
         # Draw the progress bar background. We have to do this after the
         # foreground so that it won't get blurred.
         frame.line(
-            points=[(bar_x, bar_y), (bar_x + bar_width, bar_y)], color='f0f3', line_width=30,
+            points=[(bar_x, bar_y), (bar_x + bar_width, bar_y)],
+            color="f0f3",
+            line_width=30,
         )
 
         # Draw the countdown time.
@@ -89,16 +94,16 @@ def main():
             secs=math.ceil(secs_left),
             x=bar_x + bar_width - 2,
             y=bar_y - 40,
-            color='f0f',
+            color="f0f",
             font_size=32,
-            align='right',
+            align="right",
             keep_mins=True,
         )
 
         video_writer.add_frame(frame)
 
-    video_writer.write_video('hello_world.mov')
+    video_writer.write_video("hello_world.mov")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

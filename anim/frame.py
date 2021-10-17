@@ -8,7 +8,7 @@ DEFAULT_HEIGHT = 1080
 DEFAULT_FG_COLOR = (1, 1, 1, 1)
 DEFAULT_BG_COLOR = (0, 0, 0, 1)
 
-DEFAULT_FONT_FACE = 'Montserrat'
+DEFAULT_FONT_FACE = "Montserrat"
 DEFAULT_FONT_SLANT = cairo.FontSlant.NORMAL
 DEFAULT_FONT_WEIGHT = cairo.FontWeight.NORMAL
 DEFAULT_FONT_SIZE = 64
@@ -17,13 +17,14 @@ DEFAULT_TIME_TEXT_SPACING = 0.15
 
 
 TextExtents = collections.namedtuple(
-    'TextExtents', ['x_bearing', 'y_bearing', 'width', 'height', 'x_advance', 'y_advance']
+    "TextExtents",
+    ["x_bearing", "y_bearing", "width", "height", "x_advance", "y_advance"],
 )
 
 
 def color_to_rgba(color):
     """Converts a color (tuple or string) to an RGBA tuple.
-    
+
     This function does not validate the input, so if the input format
     does not match one of the formats listed below, the output format
     is not guaranteed.
@@ -32,14 +33,14 @@ def color_to_rgba(color):
          color: The color to be converted. It can be:
              An RGB tuple. 3 ints/floats between 0.0 and 1.0.
                 e.g. (1, 0, 0)
-             An RGBA tuple. 4 ints/floats between 0.0 and 1.0 (in which 
+             An RGBA tuple. 4 ints/floats between 0.0 and 1.0 (in which
                 case it is returned as is).
                 e.g. (1, 0, 0, 0.5)
              An RGB hex string.
-                e.g. #ff0000, ff0000, #f00, f00 (these are all 
+                e.g. #ff0000, ff0000, #f00, f00 (these are all
                 equivalent)
              An RGBA hex string.
-                e.g. #ff0000cc, #f00c, ff0000cc, f00c (these are all 
+                e.g. #ff0000cc, #f00c, ff0000cc, f00c (these are all
                 equivalent)
     Returns:
         A RGBA tuple of 4 ints/floats between the values 0.0 and 1.0.
@@ -51,17 +52,17 @@ def color_to_rgba(color):
             return (*color, 1)
 
     if isinstance(color, str):
-        _color = color.lstrip('#')
+        _color = color.lstrip("#")
         if len(_color) == 3:
-            _color = _color[0] * 2 + _color[1] * 2 + _color[2] * 2 + 'ff'
+            _color = _color[0] * 2 + _color[1] * 2 + _color[2] * 2 + "ff"
         elif len(_color) == 4:
             _color = _color[0] * 2 + _color[1] * 2 + _color[2] * 2 + _color[3] * 2
         elif len(_color) == 6:
-            _color += 'ff'
+            _color += "ff"
         if len(_color) == 8:
             return tuple(int(_color[i : i + 2], 16) / 255 for i in range(0, 8, 2))
 
-    raise ValueError(f'Invalid color: {color}')
+    raise ValueError(f"Invalid color: {color}")
 
 
 def secs_to_time_str(secs, keep_mins=False):
@@ -69,10 +70,10 @@ def secs_to_time_str(secs, keep_mins=False):
     m = int((secs % 360) / 60)
     s = int(secs % 60)
     if h:
-        return f'{h}:{m:02}:{s:02}'
+        return f"{h}:{m:02}:{s:02}"
     if m or keep_mins:
-        return f'{m}:{s:02}'
-    return f'{s}'
+        return f"{m}:{s:02}"
+    return f"{s}"
 
 
 class Frame:
@@ -103,7 +104,9 @@ class Frame:
         else:
             self.ctx.set_source_rgba(*color_to_rgba(self.fg_color))
 
-    def set_font(self, font_face=None, font_slant=None, font_weight=None, font_size=None):
+    def set_font(
+        self, font_face=None, font_slant=None, font_weight=None, font_size=None
+    ):
         if font_face is not None or font_slant is not None or font_weight is not None:
             if font_face is not None:
                 self.font_face = font_face
@@ -130,8 +133,8 @@ class Frame:
 
     def line(self, points=None, color=None, line_width=2, close_path=False):
         """Draws a line connected by points.
-        
-        You can either specify the points as (x, y) tuples, or 
+
+        You can either specify the points as (x, y) tuples, or
 
         Args:
             points (list of tuples of ints / floats): The list of (x, y)
@@ -165,11 +168,26 @@ class Frame:
             [See `blur_rect` below for argument descriptions.]
         """
         self.blur_rect(
-            0, 0, self.width, self.height, blur_radius, translate_x, translate_y, multiply_count
+            0,
+            0,
+            self.width,
+            self.height,
+            blur_radius,
+            translate_x,
+            translate_y,
+            multiply_count,
         )
 
     def blur_rect(
-        self, x, y, width, height, blur_radius, translate_x=0, translate_y=0, multiply_count=0
+        self,
+        x,
+        y,
+        width,
+        height,
+        blur_radius,
+        translate_x=0,
+        translate_y=0,
+        multiply_count=0,
     ):
         """Applies a Gaussian blur to a rectangle of the frame.
 
@@ -200,29 +218,38 @@ class Frame:
         tmp_ctx.paint()
 
         img = Image.frombuffer(
-            'RGBA', (width, height), tmp_surface.get_data(), 'raw', 'RGBA', 0, 1
+            "RGBA", (width, height), tmp_surface.get_data(), "raw", "RGBA", 0, 1
         )
         img = img.filter(ImageFilter.GaussianBlur(blur_radius))
         for _ in range(multiply_count):
             img = ImageChops.multiply(img, img)
-        arr = memoryview(bytearray(img.tobytes('raw', 'RGBA')))
-        tmp_surface = cairo.ImageSurface.create_for_data(arr, cairo.FORMAT_ARGB32, width, height)
+        arr = memoryview(bytearray(img.tobytes("raw", "RGBA")))
+        tmp_surface = cairo.ImageSurface.create_for_data(
+            arr, cairo.FORMAT_ARGB32, width, height
+        )
         self.ctx.set_operator(cairo.Operator.SOURCE)
         self.ctx.set_source_surface(tmp_surface, x + translate_x, y + translate_y)
         self.ctx.rectangle(x + translate_x, y + translate_y, width, height)
         self.ctx.fill()
 
-    def text(self, text, x, y, color=None, font_size=None, align='center'):
+    def text(self, text, x, y, color=None, font_size=None, align="center"):
         self.set_font(font_size=font_size)
-        x_bearing, y_bearing, width, height, x_advance, y_advance = self.ctx.text_extents(text)
-        if align == 'left':
+        (
+            x_bearing,
+            y_bearing,
+            width,
+            height,
+            x_advance,
+            y_advance,
+        ) = self.ctx.text_extents(text)
+        if align == "left":
             offset_x = x - x_bearing
-        elif align == 'center':
+        elif align == "center":
             offset_x = x - width / 2 - x_bearing
-        elif align == 'right':
+        elif align == "right":
             offset_x = x - width - x_bearing
         else:
-            raise ValueError(f'Invalid align value: {align}')
+            raise ValueError(f"Invalid align value: {align}")
         self.ctx.move_to(offset_x, y)
         self._set_source_color(color)
         self.ctx.set_operator(cairo.Operator.OVER)
@@ -236,7 +263,7 @@ class Frame:
         color=None,
         font_size=None,
         spacing=DEFAULT_TIME_TEXT_SPACING,
-        align='center',
+        align="center",
         keep_mins=False,
     ):
         """Writes a monospaced time text.
@@ -247,45 +274,47 @@ class Frame:
         text = secs_to_time_str(secs, keep_mins)
 
         self.set_font(font_size=font_size)
-        extents = {char: TextExtents(*self.ctx.text_extents(char)) for char in '0123456789:'}
+        extents = {
+            char: TextExtents(*self.ctx.text_extents(char)) for char in "0123456789:"
+        }
 
         self._set_source_color(color)
         self.ctx.set_operator(cairo.Operator.OVER)
 
-        num_colons = text.count(':')
+        num_colons = text.count(":")
         num_numbers = len(text) - num_colons
         num_gaps = len(text) - 1
         gap_width = self.font_size * spacing
         width = (
-            num_colons * extents[':'].width
-            + num_numbers * extents['0'].width
+            num_colons * extents[":"].width
+            + num_numbers * extents["0"].width
             + num_gaps * gap_width
         )
 
-        if text[0] == '1':
-            width -= extents['0'].width - extents['1'].width
+        if text[0] == "1":
+            width -= extents["0"].width - extents["1"].width
 
-        if align == 'left':
+        if align == "left":
             cur_x = x
-        elif align == 'center':
+        elif align == "center":
             cur_x = x - width / 2
-        elif align == 'right':
+        elif align == "right":
             cur_x = x - width
         else:
-            raise ValueError(f'Invalid align value: {align}')
+            raise ValueError(f"Invalid align value: {align}")
 
         for char_index, char in enumerate(text):
-            if char == ':':
-                char_x = cur_x - extents[':'].x_bearing
-                cur_x += extents[':'].width + gap_width
+            if char == ":":
+                char_x = cur_x - extents[":"].x_bearing
+                cur_x += extents[":"].width + gap_width
             else:
-                if char_index == 0 and char == '1':
-                    char_x = cur_x - extents['1'].x_bearing
-                    cur_x += extents['1'].width + gap_width
+                if char_index == 0 and char == "1":
+                    char_x = cur_x - extents["1"].x_bearing
+                    cur_x += extents["1"].width + gap_width
                 else:
-                    width_diff = extents['0'].width - extents[char].width
+                    width_diff = extents["0"].width - extents[char].width
                     char_x = cur_x + width_diff / 2 - extents[char].x_bearing
-                    cur_x += extents['0'].width + gap_width
+                    cur_x += extents["0"].width + gap_width
 
             self.ctx.move_to(char_x, y)
             self.ctx.show_text(char)

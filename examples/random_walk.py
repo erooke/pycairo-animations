@@ -1,5 +1,6 @@
 import os
 import random
+
 import tqdm
 
 import anim
@@ -22,7 +23,7 @@ LINE_COLOR = (1, 0, 0, 0.025)
 LINE_WIDTH = 1
 
 CUR_DIR = os.path.dirname(os.path.realpath(__file__))
-VIDEO_OUTPUT_PATH = os.path.join(CUR_DIR, 'random_walk.mov')
+VIDEO_OUTPUT_PATH = os.path.join(CUR_DIR, "random_walk.mov")
 
 
 def main():
@@ -50,5 +51,5 @@ def main():
     video_writer.write_video(VIDEO_OUTPUT_PATH)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
