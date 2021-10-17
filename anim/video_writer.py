@@ -1,60 +1,32 @@
-import glob
-import os
-import subprocess
-import tempfile
+from subprocess import DEVNULL, PIPE, Popen
 
 DEFAULT_FPS = 24
-DEFAULT_OUTPUT_PATH = "video.mov"
-
-# Set `FFMPEG_PATH` to the local path of your installation of ffmpeg.
-# I use the Homebrew version: https://formulae.brew.sh/formula/ffmpeg
-DEFAULT_FFMPEG_PATH = glob.glob("/usr/local/Cellar/ffmpeg/*/bin/ffmpeg")[-1]
+DEFAULT_OUTPUT_PATH = "video.mkv"
 
 
 class VideoWriter:
-    def __init__(
-        self, fps=DEFAULT_FPS, frames_dir=None, ffmpeg_path=DEFAULT_FFMPEG_PATH
-    ):
-        self.fps = fps
-        self.frames_dir = frames_dir
-        self.ffmpeg_path = ffmpeg_path
-        self.tmp_dir_handle = None
-
-        if self.frames_dir is None:
-            self.tmp_dir_handle = tempfile.TemporaryDirectory()
-            self.frames_dir = self.tmp_dir_handle.name
-
-        self.frame_num = 0
-        self.audio_path = None
-
-    def add_frame(self, frame):
-        frame.write_to_png(os.path.join(self.frames_dir, f"{self.frame_num}.png"))
-        self.frame_num += 1
-
-    def add_audio(self, audio_path):
-        self.audio_path = audio_path
-
-    def write_video(self, output_path=DEFAULT_OUTPUT_PATH):
-        frame_pattern = os.path.join(self.frames_dir, "%d.png")
+    def __init__(self, fps=DEFAULT_FPS, output_path=DEFAULT_OUTPUT_PATH):
         args = [
-            self.ffmpeg_path,
+            "ffmpeg",
             "-y",
             "-f",
-            "image2",
+            "image2pipe",
+            "-vcodec",
+            "png",
             "-framerate",
-            str(self.fps),
+            str(fps),
             "-i",
-            frame_pattern,
+            "-",
+            "-vcodec",
+            "libx264",
+            output_path,
         ]
 
-        if self.audio_path is not None:
-            args.extend(["-i", self.audio_path])
+        self.process = Popen(args, stdin=PIPE, stdout=DEVNULL, stderr=DEVNULL)
 
-        args.extend(["-c:v", "prores_ks", "-profile:v", "3", output_path])
-
-        print(f"Writing video...")
-        subprocess.run(args)
+    def add_frame(self, frame):
+        frame.write_to_png(self.process.stdin)
 
     def __del__(self):
-        if self.tmp_dir_handle is not None:
-            self.tmp_dir_handle.cleanup()
+        self.process.stdin.close()
+        self.process.wait()
